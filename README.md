@@ -10,6 +10,7 @@ A modern, lightweight CMS for company websites, built with the Laravel ecosystem
 - **Database**: MySQL (default) or PostgreSQL — tests use SQLite in-memory
 - **Asset Bundler**: Vite + Tailwind CSS v4 + Alpine.js
 - **File Storage**: Laravel Storage on the `public` disk (S3-compatible can be added later)
+- **Local dev**: Laravel Sail (Docker — PHP 8.5, MySQL 8.4, Redis, Mailpit) or native PHP + MySQL
 - **Other**: Spatie Activity Log, Spatie Media Library, Spatie Sitemap, Eloquent Sluggable
 
 ## Features
@@ -41,10 +42,53 @@ A modern, lightweight CMS for company websites, built with the Laravel ecosystem
 
 ## Getting Started
 
+You can run this project either via [Laravel Sail](https://laravel.com/docs/sail) (Docker) or natively with PHP + MySQL on your machine.
+
+### Option A — Docker (Laravel Sail, recommended)
+
 ```bash
-# 1. Clone and install
+# 1. Clone and install host-side composer deps once so Sail's binary is available
 git clone <your-repo-url>
 cd <your-repo>
+composer install --ignore-platform-reqs   # one-time bootstrap
+cp .env.example .env
+
+# 2. Bring up the stack (PHP 8.5 + MySQL 8.4 + Mailpit + Redis)
+./vendor/bin/sail up -d
+
+# 3. Generate the app key and link the storage disk
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan storage:link
+
+# 4. Run migrations and seeders (creates demo content + admin users)
+./vendor/bin/sail artisan migrate --seed
+
+# 5. Install JS deps and build assets (or run dev mode with HMR)
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
+# or: ./vendor/bin/sail npm run dev
+```
+
+- Public site: <http://localhost>
+- Admin panel: <http://localhost/admin>
+- Mailpit dashboard: <http://localhost:8025>
+
+You can configure ports via `APP_PORT`, `VITE_PORT`, `FORWARD_DB_PORT`, `FORWARD_REDIS_PORT`, `FORWARD_MAILPIT_PORT`, `FORWARD_MAILPIT_DASHBOARD_PORT` in `.env`.
+
+Common Sail commands:
+
+```bash
+./vendor/bin/sail down                 # stop containers
+./vendor/bin/sail shell                # bash into the app container
+./vendor/bin/sail artisan tinker
+./vendor/bin/sail test                 # phpunit
+./vendor/bin/sail composer require <package>
+```
+
+### Option B — Native (no Docker)
+
+```bash
+# 1. Install deps
 composer install
 npm install
 
@@ -52,24 +96,22 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# Edit .env to point to your MySQL database
-# DB_CONNECTION=mysql
-# DB_DATABASE=company_cms
-# DB_USERNAME=root
-# DB_PASSWORD=
+# Edit .env for native dev:
+#   DB_HOST=127.0.0.1
+#   DB_USERNAME=root   (or your MySQL user)
+#   DB_PASSWORD=
+#   REDIS_HOST=127.0.0.1
+#   MAIL_MAILER=log
+#   MAIL_HOST=127.0.0.1
 
-# 3. Create storage symlink (uploads go to storage/app/public)
+# 3. Create storage symlink
 php artisan storage:link
 
 # 4. Run migrations and seeders
 php artisan migrate --seed
 
-# 5. Build front-end assets
-npm run build      # production
-# or
-npm run dev        # dev with HMR
-
-# 6. Serve
+# 5. Build assets and serve
+npm run build       # or: npm run dev for HMR
 php artisan serve
 ```
 
