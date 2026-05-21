@@ -135,7 +135,7 @@ Tests run against an in-memory SQLite database. The included `PublicPagesTest` c
 
 ## CI
 
-A GitHub Actions workflow runs at `.github/workflows/ci.yml`. It installs PHP + Node, runs Pint and PHPUnit on every push and pull request.
+A GitHub Actions workflow is shipped at [`docs/ci-workflow.yml`](docs/ci-workflow.yml). To enable it, copy that file to `.github/workflows/ci.yml` (the Devin OAuth integration that created this repo does not have the `workflow` scope, so the file lives outside `.github/workflows/` initially). It installs PHP + Node, runs Pint and PHPUnit on every push and pull request.
 
 ## Roles & Permissions
 
